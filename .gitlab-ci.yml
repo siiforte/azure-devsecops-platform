@@ -24,6 +24,7 @@ variables:
 
 before_script:
   - cd $WORKING_DIR
+  - mkdir -p $TF_PLUGIN_CACHE_DIR
 
 tf_plan:
   stage: plan
@@ -37,7 +38,6 @@ tf_plan:
     paths:
       - .terraform.d/plugin-cache
   script:
-    - mkdir -p $TF_PLUGIN_CACHE_DIR
     - terraform init
     - terraform fmt -check -recursive
     - terraform validate
