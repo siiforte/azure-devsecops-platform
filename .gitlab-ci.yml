@@ -1,5 +1,4 @@
 stages:
-  - init
   - plan
   - apply
 
@@ -23,15 +22,7 @@ variables:
 
   TF_PLUGIN_CACHE_DIR: $CI_PROJECT_DIR/.terraform.d/plugin-cache
 
-cache:
-  key:
-    files:
-      - src/azure/bootstrap/.terraform.lock.hcl
-  paths:
-    - src/azure/bootstrap/.terraform.d/
-
 before_script:
-  - mkdir -p $TF_PLUGIN_CACHE_DIR
   - cd $WORKING_DIR
 
 tf_plan:
@@ -39,7 +30,14 @@ tf_plan:
   id_tokens:
     ARM_OIDC_TOKEN:
       aud: api://AzureADTokenExchange
+  cache:
+    key:
+      files:
+        - src/azure/bootstrap/.terraform.lock.hcl
+    paths:
+      - .terraform.d/plugin-cache
   script:
+    - mkdir -p $TF_PLUGIN_CACHE_DIR
     - terraform init
     - terraform fmt -check -recursive
     - terraform validate
@@ -58,3 +56,7 @@ tf_apply:
   script:
     - terraform init
     - terraform apply -auto-approve tfplan
+  needs:
+    - job: tf_plan
+      artifacts: true
+  when: manual
