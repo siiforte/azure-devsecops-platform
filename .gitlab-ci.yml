@@ -48,7 +48,7 @@ tf_plan:
     when: on_success
     expire_in: 1 days
     paths:
-      - src/azure/bootstrap/tfplan.tf
+      - src/azure/bootstrap/tfplan.tfplan
 
 tf_apply:
   stage: apply
@@ -57,4 +57,4 @@ tf_apply:
       aud: api://AzureADTokenExchange
   script:
     - terraform init
-    - terraform apply -auto-approve tfplan.tf
+    - terraform apply -auto-approve tfplan.tfplan
