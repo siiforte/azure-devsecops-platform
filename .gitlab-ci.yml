@@ -21,14 +21,14 @@ variables:
 
   WORKING_DIR: "src/azure/bootstrap"
 
-  TF_PLUGIN_CACHE_DIR: $CI_PROJECT_DIR/.terraform.D/plugin-cache
+  TF_PLUGIN_CACHE_DIR: $CI_PROJECT_DIR/.terraform.d/plugin-cache
 
 cache:
   key:
     files:
-      - $WORKING_DIR/.terraform.lock.hcl
+      - src/azure/bootstrap/.terraform.lock.hcl
   paths:
-    - $TF_PLUGIN_CACHE_DIR
+    - src/azure/bootstrap/.terraform.d/
 
 before_script:
   - mkdir -p $TF_PLUGIN_CACHE_DIR
@@ -48,7 +48,7 @@ tf_plan:
     when: on_success
     expire_in: 1 days
     paths:
-      - $WORKING_DIR/tfplan.tf
+      - src/azure/bootstrap/tfplan.tf
 
 tf_apply:
   stage: apply
