@@ -27,9 +27,9 @@ cache:
   paths:
     - TF_PLUGIN_CACHE_DIR
 
-  before_script:
-    - cd src/azure/bootstrap
-    - mkdir -p $TF_PLUGIN_CACHE_DIR
+before_script:
+  - cd src/azure/bootstrap
+  - mkdir -p $TF_PLUGIN_CACHE_DIR
 
 tf_plan:
   stage: plan
