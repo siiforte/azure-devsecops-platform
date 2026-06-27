@@ -3,7 +3,9 @@ stages:
   - plan
   - apply
 
-image: hashicorp/terraform:1.15.7
+image:
+  name: hashicorp/terraform:1.15.7
+  entrypoint: [""]
 
 # Global environment variables for the Terraform Azure provider used in each job
 variables:
@@ -13,7 +15,6 @@ variables:
   ARM_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID
 
 tf_validate:
-  image: hashicorp/terraform:1.15.7
   stage: init
   id_tokens:
     ARM_OIDC_TOKEN:
