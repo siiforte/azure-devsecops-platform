@@ -18,7 +18,8 @@ variables:
   ARM_CLIENT_ID: $AZURE_CLIENT_ID
   ARM_TENANT_ID: $AZURE_TENANT_ID
   ARM_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID
-  TF_PLUGIN_CACHE_DIR: $CI_PROJECT_DIR/.terraform.d/plugin-cache
+  WORKING_DIR: src/azure/bootstrap
+  TF_PLUGIN_CACHE_DIR: $WORKING_DIR/.terraform-plugin-cache
 
 cache:
   key:
@@ -28,7 +29,7 @@ cache:
     - TF_PLUGIN_CACHE_DIR
 
 before_script:
-  - cd src/azure/bootstrap
+  - cd $WORKING_DIR
   - mkdir -p $TF_PLUGIN_CACHE_DIR
 
 tf_plan:
