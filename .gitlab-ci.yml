@@ -20,6 +20,7 @@ tf_validate:
     ARM_OIDC_TOKEN:
       aud: api://AzureADTokenExchange
   script:
+    - cd src/azure/bootstrap
     - terraform init
     - terraform fmt
     - terraform validate
@@ -30,5 +31,6 @@ tf_plan:
     ARM_OIDC_TOKEN:
       aud: api://AzureADTokenExchange
   script:
+    - cd src/azure/bootstrap
     - terraform init
     - terraform plan
