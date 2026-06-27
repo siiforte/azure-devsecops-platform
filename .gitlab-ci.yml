@@ -43,12 +43,12 @@ tf_plan:
     - terraform init
     - terraform fmt -check -recursive
     - terraform validate
-    - terraform plan -out=tfplan.tf
+    - terraform plan -out=tfplan
   artifacts:
     when: on_success
     expire_in: 1 days
     paths:
-      - src/azure/bootstrap/tfplan.tfplan
+      - src/azure/bootstrap/tfplan
 
 tf_apply:
   stage: apply
@@ -57,4 +57,4 @@ tf_apply:
       aud: api://AzureADTokenExchange
   script:
     - terraform init
-    - terraform apply -auto-approve tfplan.tfplan
+    - terraform apply -auto-approve tfplan
