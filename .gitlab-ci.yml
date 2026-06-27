@@ -3,6 +3,11 @@ stages:
   - plan
   - apply
 
+# GLobal rule to run on master branch only
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+
 image:
   name: hashicorp/terraform:1.15.7
   entrypoint: [""]
@@ -14,17 +19,6 @@ variables:
   ARM_TENANT_ID: $AZURE_TENANT_ID
   ARM_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID
 
-tf_validate:
-  stage: init
-  id_tokens:
-    ARM_OIDC_TOKEN:
-      aud: api://AzureADTokenExchange
-  script:
-    - cd src/azure/bootstrap
-    - terraform init
-    - terraform fmt
-    - terraform validate
-
 tf_plan:
   stage: plan
   id_tokens:
@@ -33,4 +27,20 @@ tf_plan:
   script:
     - cd src/azure/bootstrap
     - terraform init
-    - terraform plan
+    - terraform fmt -check -recursive
+    - terraform validate
+    - terraform plan -out=tfplan.tf
+  artifacts:
+    when: on_success
+    expire_in: 2 days
+    paths:
+      - src/azure/bootstrap/tfplan.tf
+
+tf_apply:
+  stage: apply
+  id_tokens:
+    ARM_OIDC_TOKEN:
+      aud: api://AzureADTokenExchange
+  script:
+    - cd src/azure/bootstrap
+    - terraform apply -auto-approve tfplan.tf
