@@ -18,6 +18,18 @@ variables:
   ARM_CLIENT_ID: $AZURE_CLIENT_ID
   ARM_TENANT_ID: $AZURE_TENANT_ID
   ARM_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID
+  TF_PLUGIN_CACHE_DIR: $CI_PROJECT_DIR/.terraform.d/plugin-cache
+
+cache:
+  key:
+    files:
+      - .terraform.lock.hcl
+  paths:
+    - TF_PLUGIN_CACHE_DIR
+
+  before_script:
+    - cd src/azure/bootstrap
+    - mkdir -p $TF_PLUGIN_CACHE_DIR
 
 tf_plan:
   stage: plan
@@ -25,14 +37,13 @@ tf_plan:
     ARM_OIDC_TOKEN:
       aud: api://AzureADTokenExchange
   script:
-    - cd src/azure/bootstrap
     - terraform init
     - terraform fmt -check -recursive
     - terraform validate
     - terraform plan -out=tfplan.tf
   artifacts:
     when: on_success
-    expire_in: 2 days
+    expire_in: 1 days
     paths:
       - src/azure/bootstrap/tfplan.tf
 
@@ -42,5 +53,4 @@ tf_apply:
     ARM_OIDC_TOKEN:
       aud: api://AzureADTokenExchange
   script:
-    - cd src/azure/bootstrap
     - terraform apply -auto-approve tfplan.tf
