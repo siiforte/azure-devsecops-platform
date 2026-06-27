@@ -56,4 +56,5 @@ tf_apply:
     ARM_OIDC_TOKEN:
       aud: api://AzureADTokenExchange
   script:
+    - terraform init
     - terraform apply -auto-approve tfplan.tf
