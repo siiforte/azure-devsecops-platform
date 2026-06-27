@@ -18,19 +18,21 @@ variables:
   ARM_CLIENT_ID: $AZURE_CLIENT_ID
   ARM_TENANT_ID: $AZURE_TENANT_ID
   ARM_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID
-  WORKING_DIR: src/azure/bootstrap
-  TF_PLUGIN_CACHE_DIR: $WORKING_DIR/.terraform-plugin-cache
+
+  WORKING_DIR: "src/azure/bootstrap"
+
+  TF_PLUGIN_CACHE_DIR: $CI_PROJECT_DIR/.terraform-plugin-cache
 
 cache:
   key:
     files:
-      - .terraform.lock.hcl
+      - $WORKING_DIR/.terraform.lock.hcl
   paths:
-    - TF_PLUGIN_CACHE_DIR
+    - $TF_PLUGIN_CACHE_DIR
 
 before_script:
-  - cd $WORKING_DIR
   - mkdir -p $TF_PLUGIN_CACHE_DIR
+  - cd $WORKING_DIR
 
 tf_plan:
   stage: plan
@@ -46,7 +48,7 @@ tf_plan:
     when: on_success
     expire_in: 1 days
     paths:
-      - src/azure/bootstrap/tfplan.tf
+      - $WORKING_DIR/tfplan.tf
 
 tf_apply:
   stage: apply
@@ -54,4 +56,4 @@ tf_apply:
     ARM_OIDC_TOKEN:
       aud: api://AzureADTokenExchange
   script:
-    - terraform apply -auto-approve tfplan.tf
+    - terraform apply -auto-approve $WORKING_DIR/tfplan.tf
