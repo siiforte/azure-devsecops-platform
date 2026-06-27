@@ -48,7 +48,7 @@ tf_plan:
     when: on_success
     expire_in: 1 days
     paths:
-      - tfplan.tf
+      - $WORKING_DIR/tfplan.tf
 
 tf_apply:
   stage: apply
