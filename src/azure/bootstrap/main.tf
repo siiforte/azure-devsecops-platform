@@ -33,5 +33,5 @@ resource "azuread_application_federated_identity_credential" "capstone_fic" {
   description    = "Allow GitLab master branch deployments for siiforte/capstone-platform"
   audiences      = ["api://AzureADTokenExchange"]
   issuer         = "https://gitlab.com"
-  subject        = "project_path:siiforte/capstone-platform:ref_type:branch:ref:master"
+  subject        = "project_id:83832185:ref_type:branch:ref:master"
 }

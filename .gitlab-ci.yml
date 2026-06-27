@@ -1,29 +1,33 @@
 stages:
-  - .pre
-  - validate
+  - init
   - plan
   - apply
 
 image: hashicorp/terraform:1.15.7
 
-azurerm_oidc:
-  stage: .pre
-  id_tokens:
-    GITLAB_OIDC_TOKEN:
-      aud: https://gitlab.com
-  script:
-    - az login --service-principal -u $ARM_CLIENT_ID -t $ARM_TENANT_ID -s $ARM_SUBSCRIPTION_ID --federated-token $GITLAB_OIDC_TOKEN
-    - az account show
+# Global environment variables for the Terraform Azure provider used in each job
+variables:
+  ARM_USE_OIDC: "true"
+  ARM_CLIENT_ID: $AZURE_CLIENT_ID
+  ARM_TENANT_ID: $AZURE_TENANT_ID
+  ARM_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID
 
 tf_validate:
-  stage: validate
+  image: hashicorp/terraform:1.15.7
+  stage: init
+  id_tokens:
+    ARM_OIDC_TOKEN:
+      aud: api://AzureADTokenExchange
   script:
     - terraform init
     - terraform fmt
     - terraform validate
-    - export $ARM_SUBSCRIPTION_ID=TF_VAR_azure_subscription_id
 
 tf_plan:
   stage: plan
+  id_tokens:
+    ARM_OIDC_TOKEN:
+      aud: api://AzureADTokenExchange
   script:
+    - terraform init
     - terraform plan
