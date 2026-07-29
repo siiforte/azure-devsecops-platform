@@ -1,7 +1,7 @@
 
 variable "azure_region" {
   type        = string
-  default     = "East US"
+  default     = "eastus"
   description = "The defaultAzure region where the resources will be deployed"
 }
 
@@ -57,6 +57,6 @@ locals {
 
 variable "resource_group_name" {
   type        = string
-  default     = "rg-01-capstone-dev-eus"
+  default     = "rg-01-capstone-bootstrap-eus"
   description = "The name of the resource group"
 }

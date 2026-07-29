@@ -1,6 +1,6 @@
 # Main storage account for lxv-capstone dso engineering roadmap
 resource "azurerm_storage_account" "capstone_st" {
-  name                     = "lxvcapstonedevtf01"
+  name                     = "lxvcapstonetf01"
   resource_group_name      = azurerm_resource_group.capstone_rg.name
   location                 = azurerm_resource_group.capstone_rg.location
   account_tier             = "Standard"
@@ -31,14 +31,14 @@ resource "azurerm_storage_account" "capstone_st" {
 }
 
 resource "azurerm_management_lock" "capstone_st_lock" {
-  name       = "lk-01-resource-capstone-st-01"
+  name       = "lk-01-capstone-st01-bootstrap-eus"
   scope      = azurerm_storage_account.capstone_st.id
   lock_level = "CanNotDelete"
   notes      = "Locked in order to prevent accidental deletion of terraform state files"
 }
 
 resource "azurerm_storage_container" "capstone_sc" {
-  name                  = "tf-state"
+  name                  = "sc-01-tf-state-bootstrap-eus"
   storage_account_id    = azurerm_storage_account.capstone_st.id
   container_access_type = "private"
 

@@ -14,8 +14,8 @@ terraform {
   }
   backend "azurerm" {
     use_azuread_auth     = true
-    storage_account_name = "lxvcapstonedevtf01"
-    container_name       = "tf-state"
+    storage_account_name = "lxvcapstonetf01"
+    container_name       = "sc-01-tf-state-bootstrap-eus"
     key                  = "terraform.tfstate"
   }
 }
