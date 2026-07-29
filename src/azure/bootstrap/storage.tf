@@ -17,17 +17,9 @@ resource "azurerm_storage_account" "capstone_st" {
     container_delete_retention_policy {
       days = 7 # Specify data retention between 1 and 365 days
     }
-
   }
 
-  tags = {
-    costcenter  = var.cost_center
-    createddate = local.created_date
-    environment = var.environment
-    owner       = var.owner
-    project     = var.project
-    region      = replace(var.azure_region, " ", "-")
-  }
+  tags = local.common_tags
 }
 
 resource "azurerm_management_lock" "capstone_st_lock" {
@@ -41,6 +33,5 @@ resource "azurerm_storage_container" "capstone_sc" {
   name                  = "sc-01-tf-state-bootstrap-eus"
   storage_account_id    = azurerm_storage_account.capstone_st.id
   container_access_type = "private"
-
 }
 
