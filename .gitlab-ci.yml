@@ -59,7 +59,7 @@ dev_tf_plan:
   <<: *tf_job
   stage: plan
   variables:
-    WORKING_DIR: src/azure/environment/dev
+    WORKING_DIR: src/azure/environments/dev
   cache:
     key:
       files:
@@ -97,7 +97,7 @@ dev_tf_apply:
   <<: *tf_job
   stage: apply
   variables:
-    WORKING_DIR: src/azure/environment/dev
+    WORKING_DIR: src/azure/environments/dev
   script:
     - cd $WORKING_DIR
     - terraform init
