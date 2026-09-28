@@ -7,10 +7,6 @@ workflow:
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
 
-image:
-  name: hashicorp/terraform:1.15.7
-  entrypoint: [""]
-
 # Global environment variables for the Terraform Azure provider used in each job
 variables:
   ARM_USE_OIDC: "true"
@@ -18,19 +14,27 @@ variables:
   ARM_TENANT_ID: $AZURE_TENANT_ID
   ARM_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID
 
-  WORKING_DIR: "src/azure/bootstrap"
+  WORKING_DIR: ""
 
   TF_PLUGIN_CACHE_DIR: $CI_PROJECT_DIR/.terraform.d/plugin-cache
 
 before_script:
-  - cd $WORKING_DIR
   - mkdir -p $TF_PLUGIN_CACHE_DIR
 
-tf_plan:
-  stage: plan
+# Anchor job template for Terraform jobs
+.tf_job: &tf_job
+  image:
+    name: hashicorp/terraform:1.15.7
+    entrypoint: [""]
   id_tokens:
     ARM_OIDC_TOKEN:
       aud: api://AzureADTokenExchange
+
+bootstrap_tf_plan:
+  <<: *tf_job
+  stage: plan
+  variables:
+    WORKING_DIR: "src/azure/bootstrap"
   cache:
     key:
       files:
@@ -38,6 +42,8 @@ tf_plan:
     paths:
       - .terraform.d/plugin-cache
   script:
+    - cd $WORKING_DIR
+    - mkdir -p $PLUGIN_CACHE_DIR
     - terraform init
     - terraform fmt -check -recursive
     - terraform validate
@@ -47,16 +53,56 @@ tf_plan:
     expire_in: 1 days
     paths:
       - src/azure/bootstrap/tfplan
+  when: manual
 
-tf_apply:
-  stage: apply
-  id_tokens:
-    ARM_OIDC_TOKEN:
-      aud: api://AzureADTokenExchange
+dev_tf_plan:
+  <<: &tf_job
+  stage: plan
+  variables:
+    WORKING_DIR: src/azure/environment/dev
+  cache:
+    key:
+      files:
+        - src/azure/environment/dev/.terraform.lock.hcl
+    paths:
+      - .terraform.d/plugin-cache
   script:
+    - cd $WORKING_DIR
+    - mkdir -p $PLUGIN_CACHE_DIR
+    - terraform init
+    - terraform fmt -check -recursive
+    - terraform validate
+    - terraform plan -var-file=dev.tfvars -out=tfplan
+  artifacts:
+    when: on_success
+    expire_in: 1 days
+    paths:
+      - src/azure/environment/dev/tfplan
+
+bootstrap_tf_apply:
+  <<: *tf_job
+  stage: apply
+  variables:
+    WORKING_DIR: src/azure/bootstrap
+  script:
+    - cd $WORKING_DIR
     - terraform init
     - terraform apply -auto-approve tfplan
   needs:
-    - job: tf_plan
+    - job: bootstrap_tf_plan
+      artifacts: true
+  when: manual
+
+dev_tf_apply:
+  <<: *tf_job
+  stage: apply
+  variables:
+    WORKING_DIR: src/azure/environment/dev
+  script:
+    - cd $WORKING_DIR
+    - terraform init
+    - terraform apply -auto-approve tfplan
+  needs:
+    - job: dev_tf_plan
       artifacts: true
   when: manual

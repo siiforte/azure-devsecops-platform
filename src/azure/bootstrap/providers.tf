@@ -16,7 +16,7 @@ terraform {
     use_azuread_auth     = true
     storage_account_name = "lxvcapstonetf01"
     container_name       = "sc-01-tf-state-bootstrap-eus"
-    key                  = "terraform.tfstate"
+    key                  = "bootstrap/terraform.tfstate"
   }
 }
 

@@ -14,9 +14,10 @@ Thumbs.db
 *.tfstate
 *.tfstate.*
 # commonly carry sensitive values (admin passwords, connection strings passed as variables)
-*.tfvars
-*.tfvars.json
+*.secrets.tfvars
+secrets.tfvars
 *.variables.*
+*.tfvars
 
 # Secrets
 .env
