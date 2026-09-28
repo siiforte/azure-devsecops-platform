@@ -56,7 +56,7 @@ bootstrap_tf_plan:
   when: manual
 
 dev_tf_plan:
-  <<: &tf_job
+  <<: *tf_job
   stage: plan
   variables:
     WORKING_DIR: src/azure/environment/dev
