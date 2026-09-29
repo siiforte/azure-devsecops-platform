@@ -18,14 +18,14 @@ variables:
 
   TF_PLUGIN_CACHE_DIR: $CI_PROJECT_DIR/.terraform.d/plugin-cache
 
-before_script:
-  - mkdir -p $TF_PLUGIN_CACHE_DIR
-
 # Anchor job template for Terraform jobs
 .tf_job: &tf_job
   image:
     name: hashicorp/terraform:1.15.7
     entrypoint: [""]
+  before_script:
+    - mkdir -p $TF_PLUGIN_CACHE_DIR
+    - cd $WORKING_DIR
   id_tokens:
     ARM_OIDC_TOKEN:
       aud: api://AzureADTokenExchange
@@ -42,8 +42,6 @@ bootstrap_tf_plan:
     paths:
       - .terraform.d/plugin-cache
   script:
-    - cd $WORKING_DIR
-    - mkdir -p $PLUGIN_CACHE_DIR
     - terraform init
     - terraform fmt -check -recursive
     - terraform validate
@@ -67,8 +65,6 @@ dev_tf_plan:
     paths:
       - .terraform.d/plugin-cache
   script:
-    - cd $WORKING_DIR
-    - mkdir -p $PLUGIN_CACHE_DIR
     - terraform init
     - terraform fmt -check -recursive
     - terraform validate
@@ -85,7 +81,6 @@ bootstrap_tf_apply:
   variables:
     WORKING_DIR: src/azure/bootstrap
   script:
-    - cd $WORKING_DIR
     - terraform init
     - terraform apply -auto-approve tfplan
   needs:
@@ -99,7 +94,6 @@ dev_tf_apply:
   variables:
     WORKING_DIR: src/azure/environments/dev
   script:
-    - cd $WORKING_DIR
     - terraform init
     - terraform apply -auto-approve tfplan
   needs:
