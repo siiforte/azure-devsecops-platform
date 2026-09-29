@@ -1,8 +1,10 @@
+data "azurerm_subscription" "current" {}
+
 locals {
   role_assignments = {
     contributor = {
       role        = "Contributor"
-      scope       = azurerm_resource_group.capstone_rg.id
+      scope       = data.azurerm_subscription.current.id
       description = "Role assignment for the SP Workload Contributor"
     }
     blob_contributor = {
