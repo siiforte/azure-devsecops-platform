@@ -17,7 +17,6 @@ Thumbs.db
 *.secrets.tfvars
 secrets.tfvars
 *.variables.*
-*.tfvars
 
 # Secrets
 .env
