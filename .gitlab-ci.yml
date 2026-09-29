@@ -14,8 +14,6 @@ variables:
   ARM_TENANT_ID: $AZURE_TENANT_ID
   ARM_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID
 
-  WORKING_DIR: ""
-
   TF_PLUGIN_CACHE_DIR: $CI_PROJECT_DIR/.terraform.d/plugin-cache
 
 # Anchor job template for Terraform jobs
@@ -61,7 +59,7 @@ dev_tf_plan:
   cache:
     key:
       files:
-        - src/azure/environment/dev/.terraform.lock.hcl
+        - src/azure/environments/dev/.terraform.lock.hcl
     paths:
       - .terraform.d/plugin-cache
   script:
@@ -73,7 +71,7 @@ dev_tf_plan:
     when: on_success
     expire_in: 1 days
     paths:
-      - src/azure/environment/dev/tfplan
+      - src/azure/environments/dev/tfplan
 
 bootstrap_tf_apply:
   <<: *tf_job
