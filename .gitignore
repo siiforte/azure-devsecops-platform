@@ -13,25 +13,48 @@ Thumbs.db
 **/.terraform/
 *.tfstate
 *.tfstate.*
-# commonly carry sensitive values (admin passwords, connection strings passed as variables)
+*.tfplan
+tfplan
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Sensitive variables live only in *.secrets.tfvars
 *.secrets.tfvars
 secrets.tfvars
 *.variables.*
 
 # Secrets
 .env
+.env.*
 *.pem
 *.key
+*.pfx
+*.p12
+id_rsa*
+id_ed25519*
 
-# Learning Files 
+# Learning files
 *.xlsx
 *.docx
+*.pdf
 
-# Roadmap diagrams
+# Images: ignored by default, allowed for portfolio content
 diagrams/*
 *.png
 *.svg
+!evidence/**/*.png
+!evidence/**/*.svg
 
 # Notes and Documentation
 notes/*
 docs/*
+!docs/build-log.md
+!docs/adr/
+docs/adr/*
+!docs/adr/[0-9][0-9][0-9][0-9]-*.md
+docs/adr/*[Tt]emplate*
+docs/adr/*[Cc]opy*
