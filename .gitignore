@@ -43,7 +43,7 @@ id_ed25519*
 *.pdf
 
 # Images: ignored by default, allowed for portfolio content
-diagrams/*
+/diagrams/*
 *.png
 *.svg
 !evidence/**/*.png
