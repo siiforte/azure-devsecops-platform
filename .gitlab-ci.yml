@@ -49,7 +49,9 @@ bootstrap_tf_plan:
     expire_in: 1 days
     paths:
       - src/azure/bootstrap/tfplan
-  when: manual
+  rules:
+    - changes:
+        - src/azure/bootstrap/**/*
 
 dev_tf_plan:
   <<: *tf_job
