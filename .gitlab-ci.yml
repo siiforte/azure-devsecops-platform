@@ -16,20 +16,43 @@ variables:
 
   TF_PLUGIN_CACHE_DIR: $CI_PROJECT_DIR/.terraform.d/plugin-cache
 
-# Anchor job template for Terraform jobs
-.tf_job: &tf_job
+# Hidden job template for bootstrap Terraform jobs
+.tf_bootstrap_rules:
+  rules:
+    - &bootstrap_rule #YAML anchor for bootstrap rules to allow for use with "when: manual" in the apply job
+      if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - src/azure/bootstrap/**/*
+
+#Hidden job template for dev Terraform jobs
+.tf_dev_rules:
+  rules:
+    - &dev_rule #YAML anchor for dev rules to allow for use with "when: manual" in the apply job
+      if: $CI_COMMIT_BRANCH == "master"
+      changes:
+        - src/azure/environments/dev/**/*
+        - src/azure/modules/**/*
+
+# Hidden job template for Terraform jobs
+.tf_job:
   image:
     name: hashicorp/terraform:1.15.7
     entrypoint: [""]
   before_script:
     - mkdir -p $TF_PLUGIN_CACHE_DIR
     - cd $WORKING_DIR
+  script: &tf_script
+    - terraform init
+    - terraform fmt -check -recursive
+    - terraform validate
   id_tokens:
     ARM_OIDC_TOKEN:
       aud: api://AzureADTokenExchange
 
 bootstrap_tf_plan:
-  <<: *tf_job
+  extends:
+    - .tf_job
+    - .tf_bootstrap_rules
   stage: plan
   variables:
     WORKING_DIR: "src/azure/bootstrap"
@@ -40,21 +63,18 @@ bootstrap_tf_plan:
     paths:
       - .terraform.d/plugin-cache
   script:
-    - terraform init
-    - terraform fmt -check -recursive
-    - terraform validate
+    - *tf_script
     - terraform plan -out=tfplan
   artifacts:
     when: on_success
     expire_in: 1 days
     paths:
       - src/azure/bootstrap/tfplan
-  rules:
-    - changes:
-        - src/azure/bootstrap/**/*
 
 dev_tf_plan:
-  <<: *tf_job
+  extends:
+    - .tf_job
+    - .tf_dev_rules
   stage: plan
   variables:
     WORKING_DIR: src/azure/environments/dev
@@ -65,9 +85,7 @@ dev_tf_plan:
     paths:
       - .terraform.d/plugin-cache
   script:
-    - terraform init
-    - terraform fmt -check -recursive
-    - terraform validate
+    - *tf_script
     - terraform plan -var-file=dev.tfvars -out=tfplan
   artifacts:
     when: on_success
@@ -76,7 +94,8 @@ dev_tf_plan:
       - src/azure/environments/dev/tfplan
 
 bootstrap_tf_apply:
-  <<: *tf_job
+  extends:
+    - .tf_job
   stage: apply
   variables:
     WORKING_DIR: src/azure/bootstrap
@@ -86,10 +105,13 @@ bootstrap_tf_apply:
   needs:
     - job: bootstrap_tf_plan
       artifacts: true
-  when: manual
+  rules:
+    - <<: *bootstrap_rule
+      when: manual
 
 dev_tf_apply:
-  <<: *tf_job
+  extends:
+    - .tf_job
   stage: apply
   variables:
     WORKING_DIR: src/azure/environments/dev
@@ -99,4 +121,6 @@ dev_tf_apply:
   needs:
     - job: dev_tf_plan
       artifacts: true
-  when: manual
+  rules:
+    - <<: *dev_rule
+      when: manual
