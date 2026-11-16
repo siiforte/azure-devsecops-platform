@@ -53,3 +53,20 @@ variable "subnets" {
   }))
   description = "A map of subnet objects with keys as subnet names with their corresponding values being the address prefixes inside the vNet."
 }
+
+variable "key_vault_name" {
+  description = "Key Vault name. Caller-set, globally unique (constrained resource per ADR-0001)."
+  type        = string
+}
+
+variable "admin_ip_addresses" {
+  description = "IPs allowed through the Key Vault firewall. Set via TF_VAR_admin_ip_addresses or *.secrets.tfvars."
+  type        = list(string)
+  default     = []
+}
+
+variable "azure_subscription_id" {
+  description = "Azure subscription ID. Set via TF_VAR_subscription_id or *.secrets.tfvars."
+  type        = string
+  default     = ""
+}
