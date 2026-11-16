@@ -338,3 +338,4 @@ tags = {
 
 workload = "capstone"
 
+key_vault_name = "lxv-kv-01-capstone-eus"
