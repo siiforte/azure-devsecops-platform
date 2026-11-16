@@ -62,7 +62,7 @@ variable "key_vault_name" {
 variable "admin_ip_addresses" {
   description = "IPs allowed through the Key Vault firewall. Set via TF_VAR_admin_ip_addresses or *.secrets.tfvars."
   type        = list(string)
-  default     = []
+  sensitive   = true
 }
 
 variable "azure_subscription_id" {

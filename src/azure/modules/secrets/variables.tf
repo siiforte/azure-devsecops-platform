@@ -34,7 +34,7 @@ variable "purge_protection_enabled" {
 variable "admin_ip_addresses" {
   description = "IP addresses or CIDR ranges allowed through the vault firewall."
   type        = list(string)
-  default     = []
+  sensitive   = true
 }
 
 variable "tags" {
