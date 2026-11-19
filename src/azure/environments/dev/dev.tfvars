@@ -251,18 +251,18 @@ subnets = {
         source_address_prefix      = "Internet"
         destination_address_prefix = "10.0.3.0/24"
         description                = "Prevent direct Internet exposure of application workloads"
-      }, 
+      },
       {
-  name                       = "AllowHttpHttpsInbound"
-  priority                   = 200
-  direction                  = "Inbound"
-  access                     = "Allow"
-  protocol                   = "Tcp"
-  source_port_range          = "*"
-  destination_port_ranges    = ["80", "443"]
-  source_address_prefix      = "Internet"
-  destination_address_prefix = "*"
-},
+        name                       = "AllowHttpHttpsInbound"
+        priority                   = 200
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_ranges    = ["80", "443"]
+        source_address_prefix      = "Internet"
+        destination_address_prefix = "*"
+      },
     ]
   }
 

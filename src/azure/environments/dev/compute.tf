@@ -3,10 +3,10 @@ resource "azurerm_public_ip" "pip" {
   resource_group_name = azurerm_resource_group.capstone_rg.name
   location            = azurerm_resource_group.capstone_rg.location
   allocation_method   = "Static"
-  domain_name_label = "lxv-portfolio-${var.workload}"
-  sku               = "Standard"
-  tags =    local.common_tags
-  
+  domain_name_label   = "lxv-portfolio-${var.workload}"
+  sku                 = "Standard"
+  tags                = local.common_tags
+
 }
 
 resource "azurerm_network_interface" "nic" {
@@ -26,13 +26,13 @@ resource "azurerm_network_interface" "nic" {
 }
 
 resource "azurerm_linux_virtual_machine" "web" {
-  name                = "vm-01-${var.workload}-${var.environment}-${var.azure_region}"
-  resource_group_name = azurerm_resource_group.capstone_rg.name
-  location            = azurerm_resource_group.capstone_rg.location
-  size                = "Standard_D2als_v7"
-  admin_username      = var.admin_username
+  name                            = "vm-01-${var.workload}-${var.environment}-${var.azure_region}"
+  resource_group_name             = azurerm_resource_group.capstone_rg.name
+  location                        = azurerm_resource_group.capstone_rg.location
+  size                            = "Standard_D2als_v7"
+  admin_username                  = var.admin_username
   disable_password_authentication = true
-  network_interface_ids = [azurerm_network_interface.nic.id]
+  network_interface_ids           = [azurerm_network_interface.nic.id]
 
   admin_ssh_key {
     username   = var.admin_username
@@ -51,7 +51,7 @@ resource "azurerm_linux_virtual_machine" "web" {
     version   = "latest"
   }
 
-    custom_data = base64encode(<<-EOF
+  custom_data = base64encode(<<-EOF
     #cloud-config
     packages:
       - nginx
@@ -74,7 +74,7 @@ resource "azurerm_network_security_rule" "ssh_admin" {
   protocol                    = "Tcp"
   source_port_range           = "*"
   destination_port_range      = "22"
-  source_address_prefixes       = var.admin_ip_addresses
+  source_address_prefixes     = var.admin_ip_addresses
   destination_address_prefix  = "*"
   resource_group_name         = azurerm_resource_group.capstone_rg.name
   network_security_group_name = module.networking.nsg_names["snet-app"]
