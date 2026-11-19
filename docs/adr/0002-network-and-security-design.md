@@ -80,6 +80,7 @@ Internet	                  snet-app-gateway	    TCP 80	               Optional H
 Internet                    AzureBastionSubnet    TCP 443                Allow HTTPS access to Azure Bastion
 Internet	                  VM subnets	          Deny	                 Prevent direct VM exposure
 snet-app-gateway	          snet-app	            TCP 80 or 443	         Forward web traffic to private application workloads
+Internet                    snet-app              TCP 22                 SSH to web VM from admin IPs only
 snet-app	                  snet-data	            TCP 1433	             Application access to SQL database
 GatewayManager service tag  AzureBastionSubnet    TCP 443, 8080          Allow Azure platform management traffic for Bastion
 AzureBastionSubnet	        VM subnets	          TCP 22, 3389	         Administrative SSH/RDP through Bastion
