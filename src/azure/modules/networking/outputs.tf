@@ -11,3 +11,10 @@ output "nsg_ids" {
     for key, nsg in azurerm_network_security_group.sg : key => nsg.id
   }
 }
+
+output "nsg_names" {
+  description = "A map of subnet names to NSG names."
+  value = {
+    for key, nsg in azurerm_network_security_group.sg : key => nsg.name
+  }
+}
