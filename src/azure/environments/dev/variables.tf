@@ -70,3 +70,13 @@ variable "azure_subscription_id" {
   type        = string
   default     = ""
 }
+
+variable "admin_username" {
+  description = "The username for the admin user on the Linux VM."
+  type        = string
+}
+
+variable "admin_ssh_public_key" {
+  description = "SSH public key for the web VM admin user. Public key — safe to commit."
+  type        = string
+}
