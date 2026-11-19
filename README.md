@@ -2,7 +2,9 @@
 
 > A secure, repeatable Azure platform built entirely with Terraform and deployed through a GitLab CI/CD pipeline that authenticates with OIDC — no stored cloud credentials anywhere.
 
-**Status:** Phases 0–3 complete · Phase 4 (secrets) in progress · Built and documented as a personal engineering capstone.
+**Status:** Phases 0–5 complete · Phase 6 (Ansible) in progress · Built and documented as a personal engineering capstone.
+
+**Live:** [lxv-portfolio-capstone.eastus.cloudapp.azure.com](http://lxv-portfolio-capstone.eastus.cloudapp.azure.com)
 
 > **Note:** This GitHub repository is a read-only mirror. Development and all CI/CD pipelines run on GitLab.
 
@@ -36,9 +38,9 @@ Teams that build cloud environments by hand end up with environments that drift,
 | 1 | Remote state backend: storage account with versioning, soft delete, `CanNotDelete` lock | Done |
 | 2 | Pipeline identity: Entra ID app registration, service principal, OIDC federated credential, scoped RBAC ([ADR-0003](docs/adr/0003-pipeline-identity-and-rbac.md)) | Done |
 | 3 | Networking: reusable Terraform module, six-subnet design, NSG rule matrix, Bastion subnet design ([ADR-0002](docs/adr/0002-network-and-security-design.md)) | Done |
-| 4 | Secrets: Azure Key Vault module (RBAC model, private endpoint only) | In progress |
-| 5 | Compute provisioning | Planned |
-| 6 | Configuration management (Ansible) | Planned |
+| 4 | Secrets: Azure Key Vault, RBAC model, firewall with admin IP allowlist ([ADR-0005](docs/adr/0005-key-vault.md)) | Done |
+| 5 | Compute: web VM, static public IP, DNS label, nginx via cloud-init, SSH key auth only | Done |
+| 6 | Configuration management (Ansible): hardening, nginx, site deploy, TLS | In progress |
 | 7 | Secure ingress (Application Gateway + WAF) | Planned |
 | 8 | Security scanning in CI: SAST, SCA, container scanning, SBOM | Planned |
 
@@ -50,6 +52,7 @@ Every significant choice is recorded as an Architecture Decision Record in [`doc
 - **Hardened state backend.** Terraform state contains every resource's details, so the storage account is protected against both accidental deletion (resource lock) and bad writes (blob versioning and soft delete).
 - **Accepted risk, documented with a trigger.** The pipeline identity currently has Contributor at subscription scope to unblock the initial build. That's broader than least privilege, so ADR-0003 records the risk and the condition that triggers tightening it to resource-group scope.
 - **Key Vault before HashiCorp Vault.** A managed service with Azure RBAC covers the platform's secrets through the build phase. Running a Vault cluster is deferred until there are enough real application secrets to justify the operational cost.
+- **No public IPs on VMs.** All administrative access goes through Azure Bastion. The web VM is the only exception — it has a public IP behind an NSG that restricts SSH to admin IPs only and HTTP/HTTPS to the internet.
 
 ## Repository layout
 
@@ -57,12 +60,14 @@ Every significant choice is recorded as an Architecture Decision Record in [`doc
 src/azure/
 ├── bootstrap/            # One-time setup: state backend + pipeline identity
 ├── environments/dev/     # Dev environment composition
-└── modules/              # Reusable modules (networking, secrets, ...)
+└── modules/              # Reusable modules (networking, secrets)
 docs/
 ├── adr/                  # Architecture Decision Records
 └── build-log.md          # What was built, when, and what broke along the way
 evidence/diagrams/        # Architecture diagrams
-.gitlab-ci.yml            # Plan runs when job specific files change, manual-gated apply
+site/                     # Static site source (deployed by Ansible)
+ansible/                  # Roles and playbooks for VM configuration
+.gitlab-ci.yml            # Plan runs when job-specific files change, manual-gated apply
 ```
 
 ## Pipeline
@@ -73,25 +78,9 @@ evidence/diagrams/        # Architecture diagrams
   - **Dev** jobs: files under `src/azure/environments/dev/` or `src/azure/modules/`
   - Documentation-only commits don't start a pipeline.
 - `terraform fmt -check` and `terraform validate` run before every plan.
-- **Plan** runs automatically. **Apply** is a manual gate and uses the exact plan file from its plan job, so what was reviewed is what gets applied.
+- **Plan** runs automatically. **Apply** is a manual gate on `master`, and uses the exact plan file from its plan job, so what was reviewed is what gets applied.
 - Plan and apply share a single rule definition (a YAML anchor), so an apply job can never appear without its plan.
-- Shared job settings live in hidden jobs reused with `extends`.
 - Authentication is OIDC end to end. The pipeline has no Azure secret to leak.
-
-## Production gaps
-
-This is a lab environment. Before running it for real, I would:
-
-- Tighten the pipeline identity from subscription-scope Contributor to resource-group scope (tracked in ADR-0003).
-- Enable Key Vault purge protection (disabled now so the vault can be rebuilt quickly during development).
-- Add policy-as-code checks (Checkov or OPA) that block non-compliant changes before apply.
-- Add a separate production environment with its own approval rules.
-- Disable shared-key access on the state storage account and require Entra ID authentication.
-- Scheduled drift detection: a nightly plan that flags out-of-band changes.
-
-## Lessons learned
-
-The full record is in [`docs/build-log.md`](docs/build-log.md). One example: an NSG rule failed to apply because Azure's `destination_port_range` (single value) and `destination_port_ranges` (list) are separate fields, and setting the wrong one produced an API error rather than a validation error.
 
 ## How it's deployed
 
@@ -101,3 +90,26 @@ The full record is in [`docs/build-log.md`](docs/build-log.md). One example: an 
    The pipeline maps them to the Terraform provider's `ARM_*` variables, sets `ARM_USE_OIDC=true`,
    and GitLab issues each job a short-lived `ARM_OIDC_TOKEN`.
 3. Every infrastructure change is planned in the pipeline; apply is a manual gate on `master`.
+4. The web VM is configured by Ansible running from the control node. Ansible retrieves the SSH key from Key Vault at runtime — the key is never stored on disk.
+
+## Production gaps
+
+This is a lab environment. Before running it for real, I would:
+
+- Tighten the pipeline identity from subscription-scope Contributor to resource-group scope (tracked in ADR-0003).
+- Enable Key Vault purge protection (disabled now so the vault can be rebuilt quickly during development).
+- Deploy the Key Vault private endpoint to remove public network access entirely.
+- Add policy-as-code checks (Checkov or OPA) that block non-compliant changes before apply.
+- Add a separate production environment with its own approval rules.
+- Disable shared-key access on the state storage account and require Entra ID authentication.
+- Scheduled drift detection: a nightly plan that flags out-of-band changes.
+- Move the web VM behind Application Gateway with WAF enabled.
+
+## Lessons learned
+
+The full record is in [`docs/build-log.md`](docs/build-log.md). A few examples:
+
+- Azure's `destination_port_range` (single value) and `destination_port_ranges` (list) are separate API fields — setting the wrong one produces an API error rather than a validation error.
+- NSG associations fail silently if Terraform tries to attach an NSG to a subnet before the rules finish creating. The fix is an explicit `depends_on` on the association resource.
+- Azure Bastion NSG rule names must match Microsoft's exact required names — any deviation fails the compliance check at association time.
+- B-series VMs are unavailable on Visual Studio subscriptions in some regions. Document the constraint and pick the next available size rather than debugging quota.
