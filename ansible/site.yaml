@@ -1,0 +1,19 @@
+---
+- name: Deploy portfolio site
+  hosts: webservers_azure
+  become: true
+
+  tasks:
+    - name: Copy site files to web root
+      ansible.builtin.copy:
+        src: ../site/
+        dest: /var/www/html/
+        owner: www-data
+        group: www-data
+        mode: "0644"
+
+    - name: Ensure nginx is running
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true

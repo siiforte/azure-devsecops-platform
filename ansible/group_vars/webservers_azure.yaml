@@ -1,0 +1,3 @@
+ansible_user: zzadmin
+ansible_ssh_private_key_file: ~/.ssh/linux_vm_id_ed25519.pem
+ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
