@@ -451,18 +451,39 @@ Key Vault, Bastion, RBAC role assignments for day-to-day contributors.
 - Managed identity on VM
 - Key Vault private endpoint
 
-#### Phase 5b — Remaining Compute (deferred)
-**Status:** ⬜ Not Started
+#### Phase 5b — Remaining Compute (deferred indefinitely)
+**Status:** ⬜ Deferred
+
+Remaining VMs are out of scope for the current capstone track. The environment
+is focused on the web VM + Ansible + pipeline path. These may be revisited if
+the capstone expands.
 
 - Domain controller
-- GitLab server
-- GitLab runners
+- GitLab server (self-hosted)
+- GitLab runners (self-hosted)
 - SQL/database VM
 - Minikube host
 
-### Phase 6 — Configuration Management Handoff
-**Status:** ⬜ Not Started
-Ansible playbooks/roles to configure VMs after Terraform provisions them.
+### Phase 6 — Configuration Management
+**Status:** ✅ Done
+
+Ansible deployed from WSL control node over SSH. Terraform owns infrastructure provisioning; Ansible owns VM configuration and content delivery after provisioning.
+
+**Structure**
+- `ansible/inventory.ini` — static inventory, `webservers_azure` host group
+- `ansible/group_vars/webservers_azure.yml` — SSH connection vars (user, key path)
+- `ansible/site.yml` — copies site files to `/var/www/html/`, ensures nginx running
+- `ansible.cfg` — sets default inventory path
+- `site/index.html` + `site/style.css` — portfolio site
+
+**Verified**
+- `ansible-playbook -i ansible/inventory.ini ansible/site.yml` ran clean, all tasks OK
+- Site live at `http://lxv-portfolio-capstone.eastus.cloudapp.azure.com`
+
+**Deferred**
+- TLS/HTTPS — Phase 7
+- Dynamic inventory (Terraform outputs → Ansible) — future
+- Ansible stage in GitLab CI pipeline — future
 
 ### Phase 7 — Secure Traffic
 **Status:** ⬜ Not Started
