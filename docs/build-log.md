@@ -460,9 +460,65 @@ Key Vault, Bastion, RBAC role assignments for day-to-day contributors.
 - SQL/database VM
 - Minikube host
 
-### Phase 6 — Configuration Management Handoff
-**Status:** ⬜ Not Started
-Ansible playbooks/roles to configure VMs after Terraform provisions them.
+#### Phase 5a — Web VM (MVP)
+**Status:** ✅ Complete
+
+**Resources deployed**
+- `azurerm_public_ip` — Standard SKU, static, DNS label `lxv-portfolio-capstone`
+- `azurerm_network_interface` — in `snet-app`
+- `azurerm_linux_virtual_machine` — Ubuntu 24.04 LTS, `Standard_D2als_v7`, nginx via cloud-init
+- `azurerm_network_security_rule` — SSH from admin IPs only
+- NSG rule `AllowHttpHttpsInbound` added to `snet-app`
+- `nsg_names` output added to networking module
+
+**Notes**
+- B-series unavailable on Visual Studio subscription in eastus — used `Standard_D2als_v7`
+- SSH key auth only, password authentication disabled
+- Admin IPs and SSH public key passed via protected CI/CD variables, not committed
+- Applied via pipeline
+
+**Verified**
+- `http://lxv-portfolio-capstone.eastus.cloudapp.azure.com` serves placeholder page
+- SSH works from admin IP
+
+**Deferred to Phase 5a**
+- TLS — Phase 6 via Ansible/Certbot
+- Managed identity on VM
+- Key Vault private endpoint
+
+#### Phase 5b — Remaining Compute (deferred indefinitely)
+**Status:** ⬜ Deferred
+
+Remaining VMs are out of scope for the current capstone track. The environment
+is focused on the web VM + Ansible + pipeline path. These may be revisited if
+the capstone expands.
+
+- Domain controller
+- GitLab server (self-hosted)
+- GitLab runners (self-hosted)
+- SQL/database VM
+- Minikube host
+
+### Phase 6 — Configuration Management
+**Status:** ✅ Done
+
+Ansible deployed from WSL control node over SSH. Terraform owns infrastructure provisioning; Ansible owns VM configuration and content delivery after provisioning.
+
+**Structure**
+- `ansible/inventory.ini` — static inventory, `webservers_azure` host group
+- `ansible/group_vars/webservers_azure.yml` — SSH connection vars (user, key path)
+- `ansible/site.yml` — copies site files to `/var/www/html/`, ensures nginx running
+- `ansible.cfg` — sets default inventory path
+- `site/index.html` + `site/style.css` — portfolio site
+
+**Verified**
+- `ansible-playbook -i ansible/inventory.ini ansible/site.yml` ran clean, all tasks OK
+- Site live at `http://lxv-portfolio-capstone.eastus.cloudapp.azure.com`
+
+**Deferred**
+- TLS/HTTPS — Phase 7
+- Dynamic inventory (Terraform outputs → Ansible) — future
+- Ansible stage in GitLab CI pipeline — future
 
 ### Phase 7 — Secure Traffic
 **Status:** ⬜ Not Started
